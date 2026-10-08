@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <title>Site Suitability Finder</title>
+    <script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
+    <script src="https://api.mapbox.com/mapbox-gl-js/v3.7.0/mapbox-gl.js"></script>
+    <link href="https://api.mapbox.com/mapbox-gl-js/v3.7.0/mapbox-gl.css" rel="stylesheet" />
     <link rel="stylesheet" href="css/styles.css">
   </head>
 
@@ -16,7 +19,9 @@
           <input type="time" name="time-search" aria-label="Search at a specific time...">
         </fieldset>
 
-        <div class="map">Map</div>
+        <div class="map-container">
+          <div class="map" id="map"></div>
+        </div>
       </section>
 
       <section class="station-list-section">
@@ -73,5 +78,6 @@
         </ul>
       </section>
     </main>
+        <script src="./js/main.js" type="module"></script>
   </body>
 </html>
