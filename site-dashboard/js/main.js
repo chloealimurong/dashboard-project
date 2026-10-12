@@ -14,5 +14,9 @@ map.on("load", function(){
             map.setLayoutProperty(layer.id, "visibility", "none");
         }
     });
+
+    fetch("https://hub.arcgis.com/api/v3/datasets/e433504739bd41049de5d8f4a22d34ba_0/downloads/data?format=geojson&spatialRefId=4326&where=1%3D1")
+        .then((res) => res.json);
 })
+
 window.map = map;
