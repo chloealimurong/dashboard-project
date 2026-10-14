@@ -12,66 +12,19 @@
   </head>
 
   <body>
+    <section>
     <main>
       <section class="map-section">
         <fieldset class="map-search-controls">
-          <input type="text" name="address-search" placeholder="Near..." aria-label="Search around an address or place">
-          <input type="time" name="time-search" aria-label="Search at a specific time...">
+          <input type="text" name="address-search" placeholder="Address..." aria-label="Search around an address or place">
         </fieldset>
+      <aside class="parcel-report" hidden></aside>
 
         <div class="map-container">
           <div class="map" id="map"></div>
         </div>
-      </section>
-
-      <section class="station-list-section">
-        <fieldset class="bike-search-controls">
-          <label class="electric-bikes-only-label">
-            <input type="checkbox" name="electric-bikes-only">
-            🗲🗲🗲
-        </fieldset>
-
-        <ul class="station-list">
-          <li class="station" aria-expanded="false">
-            <header class="name">Welcome Park, NPS</header>
-            <span class="distance" title="Station distance from map center">0.2 mi</span>
-            <span class="available-bikes" title="Number of suitable bikes available at the station">4 bikes</span>
-            <span class="available-docks" title="Number of open docks available at the station">8 docks</span>
-            <span class="next-drop-off-est" title="Approximate time between drop offs of suitable bikes">(~10 min)</span>
-            <span class="next-pick-up-est" title="Approximate time between docks opening up">(~15 min)</span>
-          </li>
-          <li class="station" aria-expanded="true">
-            <header class="name">Long Station Name To See How It Behaves With Text Wrapping</header>
-            <span class="distance" title="Station distance from map center">0.2 mi</span>
-            <span class="available-bikes" title="Number of suitable bikes available at the station">4 bikes</span>
-            <span class="available-docks" title="Number of open docks available at the station">8 docks</span>
-            <span class="next-drop-off-est" title="Approximate time between drop offs of suitable bikes">(~10 min)</span>
-            <span class="next-pick-up-est" title="Approximate time between docks opening up">(~15 min)</span>
-
-            <div class="details">
-              <div class="chart drop-off-time-chart">Distribution of time between drop-offs</div>
-              <div class="chart pick-up-time-chart">Distribution of time between pick-ups</div>
-            </div>
-          </li>
-          <li class="station" aria-expanded="false">
-            <header class="name">Welcome Park, NPS</header>
-            <span class="distance" title="Station distance from map center">0.2 mi</span>
-            <span class="available-bikes" title="Number of suitable bikes available at the station">4 bikes</span>
-            <span class="available-docks" title="Number of open docks available at the station">8 docks</span>
-            <span class="next-drop-off-est" title="Approximate time between drop offs of suitable bikes">(~10 min)</span>
-            <span class="next-pick-up-est" title="Approximate time between docks opening up">(~15 min)</span>
-          </li>
-          <li class="station" aria-expanded="false">
-            <header class="name">Welcome Park, NPS</header>
-            <span class="distance" title="Station distance from map center">0.2 mi</span>
-            <span class="available-bikes" title="Number of suitable bikes available at the station">4 bikes</span>
-            <span class="available-docks" title="Number of open docks available at the station">8 docks</span>
-            <span class="next-drop-off-est" title="Approximate time between drop offs of suitable bikes">(~10 min)</span>
-            <span class="next-pick-up-est" title="Approximate time between docks opening up">(~15 min)</span>
-          </li>
-        </ul>
-      </section>
     </main>
         <script src="./js/main.js" type="module"></script>
+        </section>
   </body>
 </html>
