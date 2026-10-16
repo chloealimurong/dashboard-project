@@ -22,8 +22,8 @@ All data accessed October 16, 2026.
 * **ADU rules:** City of Philadelphia, Department of Licenses and Inspections. (2022). *Accessory Dwelling Unit Checklist* (PZ_004_INF, rev. 3/8/2022). https://www.phila.gov/media/20220308130807/PZ_004_INF_Accessory-Dwelling-Unit-Checklist-rev-3.8.2022.pdf
 * **Zoning base districts** (`Zoning_BaseDistricts`): Philadelphia City Planning Commission, via OpenDataPhilly. https://www.opendataphilly.org
 * **Zoning overlays** (`Zoning_Overlays`): Philadelphia City Planning Commission, via OpenDataPhilly. https://www.opendataphilly.org
-* **Historic districts** (`historicdistricts_local`): Philadelphia Historical Commission / City Planning Commission, via OpenDataPhilly. https://www.opendataphilly.org/datasets/philadelphia-registered-historic-districts
-* **Historic sites** (`historic_sites_philreg`): Philadelphia Historical Commission / City Planning Commission, via OpenDataPhilly. https://www.opendataphilly.org/datasets/philadelphia-registered-historic-sites
+* **Historic districts** (`historicdistricts_local`): Philadelphia Historical Commission / City Planning Commission, via OpenDataPhilly. https://www.opendataphilly.org/datasets/philadelphia-registered-historic-districts (last updated 2017)
+* **Historic sites** (`historic_sites_philreg`): Philadelphia Historical Commission / City Planning Commission, via OpenDataPhilly. https://www.opendataphilly.org/datasets/philadelphia-registered-historic-sites (last updated 2017)
 * **Basemap and geocoding:** Mapbox
 
 ## Tech
