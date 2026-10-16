@@ -25,6 +25,7 @@ All data accessed October 16, 2026.
 * **Historic districts** (`historicdistricts_local`): Philadelphia Historical Commission / City Planning Commission, via OpenDataPhilly. https://www.opendataphilly.org/datasets/philadelphia-registered-historic-districts (last updated 2017)
 * **Historic sites** (`historic_sites_philreg`): Philadelphia Historical Commission / City Planning Commission, via OpenDataPhilly. https://www.opendataphilly.org/datasets/philadelphia-registered-historic-sites (last updated 2017)
 * **Basemap and geocoding:** Mapbox
+* **Colors** Color Brewer 2.0
 
 ## Tech
 
