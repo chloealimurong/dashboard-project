@@ -13,7 +13,7 @@ const CARTO_SQL = "https://phl.carto.com/api/v2/sql";
 const HISTORIC_TABLES = [
   {
     table: "historicdistricts_local",
-    columns: "name, designated",
+    columns: "name",
     distanceM: 0,
     describe: (r) => `Historic district${r.name ? `: ${r.name}` : ""}`,
   },
@@ -45,16 +45,16 @@ const map = new mapboxgl.Map({
   zoom: 10.5,
   center: [-75.165222, 39.952583],
 });
-map.addControl(new mapboxgl.NavigationControl(), "bottom-right");
+map.addControl(new mapboxgl.NavigationControl({ showCompass: false }), "bottom-right");
 
 const EMPTY = { type: "FeatureCollection", features: [] };
 
 // colors by zoninggroup; anything not listed falls back to gray
 const GROUP_COLORS = {
-  "Residential/Multi-Family/Residential Mixed-Use": "#f2c14e",
-  "Commercial/Commercial Mixed-Use": "#e4572e",
-  "Industrial/Industrial Mixed-Use": "#8d6cab",
-  "Special Purpose": "#4a9d6b",
+  "Residential/Multi-Family/Residential Mixed-Use": "#a6611a",
+  "Commercial/Commercial Mixed-Use": "#dfc27d",
+  "Industrial/Industrial Mixed-Use": "#80cdc1",
+  "Special Purpose": "#018571",
 };
 const FALLBACK_COLOR = "#b0b0b0";
 
@@ -272,6 +272,9 @@ function walk(state) {
 
 const COLORS = { yes: "#2b8a3e", no: "#c92a2a", unknown: "#868e96" };
 
+// "permitted, pending additional requirements": yellow background, dark text for contrast
+const PENDING = { bg: "#ffd43b", text: "#212529", accent: "#b08800" };
+
 // headline shown in the banner at the top of the popup
 const HEADLINE = {
   yes: "ADU permitted, pending additional requirements",
@@ -288,6 +291,7 @@ const END_MARK = {
 };
 
 let popup = null;
+let marker = null;
 
 function el(tag, text, props = {}) {
   const e = document.createElement(tag);
@@ -303,7 +307,7 @@ function yesNoButtons(node, state, rerender) {
     const on = state[node.id] === v;
     const b = el("button", v === "yes" ? "Yes" : "No", { type: "button" });
     b.style.cssText =
-      `padding:2px 14px;border-radius:12px;cursor:pointer;font-size:12px;` +
+      `padding:2px 14px;border-radius:.92em;cursor:pointer;font-size:.92em;` +
       `border:1px solid ${COLORS[v]};background:${on ? COLORS[v] : "#fff"};color:${on ? "#fff" : COLORS[v]}`;
     b.addEventListener("click", () => { state[node.id] = on ? "" : v; rerender(); }); // click again to clear
     wrap.append(b);
@@ -317,17 +321,20 @@ function manualTag() {
     title: "This answer differs from what the register data suggests",
   });
   tag.style.cssText =
-    "font-size:10px;font-weight:600;padding:1px 7px;border-radius:10px;" +
+    "font-size:.75em;font-weight:600;padding:1px 7px;border-radius:.75em;" +
     "background:#fff4e6;color:#d9480f;border:1px solid #ffa94d";
   return tag;
 }
 
 function answerChip(node) {
   const label = node.answer === "yes" ? "Yes" : node.answer === "no" ? "No" : "Unavailable";
-  const color = node.answer ? COLORS[node.answer === node.stopOn ? (node.stopStatus ?? "no") : "yes"] : COLORS.unknown;
-  // yes/no here are coloured by outcome: red = ends the check badly, green = good/continues
+  const blocked = node.answer === node.stopOn && (node.stopStatus ?? "no") === "no";
+  const bg = blocked ? COLORS.no : node.answer ? "#495057" : COLORS.unknown;
+
   const chip = el("span", node.detail ? `${label} — ${node.detail}` : label);
-  chip.style.cssText = `display:inline-block;margin-top:4px;padding:2px 10px;border-radius:12px;font-size:12px;color:#fff;background:${node.answer === node.stopOn && (node.stopStatus ?? "no") === "no" ? COLORS.no : node.answer ? "#495057" : color}`;
+  chip.style.cssText =
+    `display:inline-block;margin-top:4px;padding:2px .75em;border-radius:.92em;` +
+    `font-size:.92em;color:#fff;background:${bg}`;
   return chip;
 }
 
@@ -340,16 +347,16 @@ function renderFlow(box, state, rerender) {
     const row = el("div");
     const active = n.reached && flow.end.at === n.id && flow.end.status === "unknown";
     row.style.cssText =
-      `border-left:3px solid ${n.reached ? "#1971c2" : "#ced4da"};margin-left:6px;padding:4px 0 10px 10px;` +
+      `border-left:3px solid ${n.reached ? "#1971c2" : "#ced4da"};margin-left:6px;padding:4px 0 .75em .75em;` +
       `opacity:${n.reached ? 1 : 0.4};${active ? "background:#fff9db;" : ""}`;
 
     const q = el("div", `${i + 1}. ${n.question}`);
-    q.style.cssText = "font-size:13px;font-weight:600";
+    q.style.cssText = "font-size:1em;font-weight:600";
     row.append(q);
 
     if (!n.reached) {
       const skip = el("div", "not reached");
-      skip.style.cssText = "font-size:11px;color:#868e96";
+      skip.style.cssText = "font-size:.85em;color:#868e96";
       row.append(skip);
     } else if (n.manual) {
       const buttons = yesNoButtons(n, state, rerender);
@@ -360,7 +367,7 @@ function renderFlow(box, state, rerender) {
       row.append(buttons);
       if (n.detail) {
         const d = el("div", n.detail);
-        d.style.cssText = "font-size:11px;color:#666;margin-top:3px";
+        d.style.cssText = "font-size:.85em;color:#666;margin-top:3px";
         row.append(d);
       }
     } else {
@@ -376,14 +383,16 @@ function renderFlow(box, state, rerender) {
 }
 
 function endBox(end) {
+  const pending = end.status === "yes" && !end.confirmed;
+  const color = pending ? PENDING.accent : COLORS[end.status];
   const text =
     end.status === "yes" && end.confirmed
       ? "End of flowchart: all additional requirements confirmed"
       : END_MARK[end.status];
   const b = el("div", "→ " + text);
   b.style.cssText =
-    `margin:2px 0 8px 6px;padding:6px 10px;border-radius:10px;font-size:12px;font-weight:600;` +
-    `border:1.5px dashed ${COLORS[end.status]};color:${COLORS[end.status]};background:transparent`;
+    `margin:2px 0 8px 6px;padding:6px .75em;border-radius:.75em;font-size:.92em;font-weight:600;` +
+    `border:1.5px dashed ${color};color:${color};background:transparent`;
   return b;
 }
 
@@ -414,12 +423,12 @@ function buildStep3(state, onChange) {
   state.step3 = state.step3 ?? STEP3_ITEMS.map(() => false);
 
   const box = el("div");
-  box.style.cssText = "margin-top:10px;border-top:1px solid #dee2e6;padding-top:8px";
+  box.style.cssText = "margin-top:.75em;border-top:1px solid #dee2e6;padding-top:8px";
 
   const title = el("div");
-  title.style.cssText = "font-size:13px;font-weight:600";
+  title.style.cssText = "font-size:1em;font-weight:600";
   const hint = el("div", "Available once the flowchart above says an ADU is permitted.");
-  hint.style.cssText = "font-size:11px;color:#868e96;margin:2px 0 4px";
+  hint.style.cssText = "font-size:.85em;color:#868e96;margin:2px 0 4px";
   const list = el("div");
   box.append(title, hint, list);
 
@@ -430,12 +439,12 @@ function buildStep3(state, onChange) {
   STEP3_ITEMS.forEach((item, i) => {
     if (item.group !== lastGroup) {
       const h = el("div", item.group);
-      h.style.cssText = "font-size:11px;font-weight:600;color:#495057;margin:6px 0 0;text-transform:uppercase";
+      h.style.cssText = "font-size:.85em;font-weight:600;color:#495057;margin:6px 0 0;text-transform:uppercase";
       list.append(h);
       lastGroup = item.group;
     }
     const label = el("label");
-    label.style.cssText = "display:flex;gap:6px;align-items:flex-start;font-size:12px;margin:3px 0 3px 2px";
+    label.style.cssText = "display:flex;gap:6px;align-items:flex-start;font-size:.92em;margin:3px 0 3px 2px";
     const cb = el("input", null, { type: "checkbox", checked: state.step3[i] });
     cb.addEventListener("change", () => { state.step3[i] = cb.checked; onChange(); });
     const text = el("span", item.text);
@@ -465,11 +474,16 @@ function buildStep3(state, onChange) {
   return { box, update };
 }
 
+// true when there's room to open the report beside the pin
+const hasSideRoom = () => map.getContainer().clientWidth >= 700;
+
 function showReport({ place, lngLat, zoning, overlays, historicHits }) {
   if (popup) popup.remove();
+  if (marker) marker.remove();
 
   const root = el("div");
-  root.style.cssText = "font-family:sans-serif;max-width:320px;max-height:60vh;overflow-y:auto";
+  root.style.cssText =
+    "font-family:sans-serif;font-size:17px;width:min(560px, 85vw);max-height:68vh;overflow-y:auto;padding-right:4px";
 
   if (!zoning) {
     root.append(el("p", place ? "No zoning district found at that address." : "Address not found in Philadelphia."));
@@ -481,7 +495,7 @@ function showReport({ place, lngLat, zoning, overlays, historicHits }) {
     root.append(el("h3", place?.properties?.full_address ?? "Zoning report"));
 
     const facts = el("p");
-    facts.style.cssText = "font-size:13px;margin:4px 0";
+    facts.style.cssText = "font-size:1em;margin:4px 0";
     facts.append(
       el("strong", "Base district: "), base ?? "unknown", el("br"),
       el("strong", "Overlays: "),
@@ -490,39 +504,56 @@ function showReport({ place, lngLat, zoning, overlays, historicHits }) {
 
     // summary banner: headline + one line of reasoning, visible without scrolling
     const verdict = el("div");
-    verdict.style.cssText = "color:#fff;padding:8px;border-radius:4px;margin:8px 0";
+    verdict.style.cssText = "padding:8px;border-radius:4px;margin:8px 0";
 
     const flow = el("div");
     const step3 = buildStep3(state, () => rerender());
 
     const rerender = () => {
       const { end } = renderFlow(flow, state, rerender);
+      const pending = end.status === "yes" && !end.confirmed;
+
       verdict.replaceChildren();
       const headline = el("div", end.confirmed ? HEADLINE_CONFIRMED : HEADLINE[end.status]);
-      headline.style.cssText = "font-size:15px;font-weight:700";
+      headline.style.cssText = "font-size:1.15em;font-weight:700";
       const reason = el(
         "div",
         end.confirmed
           ? "All additional code requirements confirmed. L&I verifies these during review."
           : end.text
       );
-      reason.style.cssText = "font-size:12px;margin-top:2px";
+      reason.style.cssText = "font-size:.92em;margin-top:2px";
       verdict.append(headline, reason);
-      verdict.style.background = COLORS[end.status];
+
+      verdict.style.background = pending ? PENDING.bg : COLORS[end.status];
+      verdict.style.color = pending ? PENDING.text : "#fff";
       step3.update(end);
     };
 
     const note = el("p", "Historic status is confirmed by the Historical Commission during L&I review.");
-    note.style.cssText = "font-size:11px;color:#666;margin:6px 0";
+    note.style.cssText = "font-size:.85em;color:#666;margin:6px 0";
 
     root.append(facts, verdict, flow, step3.box, note);
     rerender();
   }
 
-  popup = new mapboxgl.Popup({ closeOnClick: false, maxWidth: "340px" })
-    .setLngLat(lngLat)
-    .setDOMContent(root)
-    .addTo(map);
+    popup = new mapboxgl.Popup({
+      closeOnClick: false,
+      maxWidth: "none",
+      anchor: hasSideRoom() ? "left" : undefined, // "left" = box opens to the right of the pin
+    }).setDOMContent(root);
+
+  if (place) {
+    // pin on the address, report box opens beside it
+    marker = new mapboxgl.Marker({ color: "#f1b6da" })
+      .setLngLat(lngLat)
+      .setPopup(popup)
+      .addTo(map);
+    marker.togglePopup();
+  } else {
+    // address not found: no pin, just show the message at the map center
+    popup.setLngLat(lngLat).addTo(map);
+  }
 }
 
 // Address search  
@@ -534,7 +565,13 @@ async function searchAddress(query) {
   }
 
   const [lng, lat] = place.geometry.coordinates;
-  map.flyTo({ center: [lng, lat], zoom: 18 });
+  map.flyTo({
+    center: [lng, lat],
+    zoom: 18,
+    padding: {
+      right: hasSideRoom() ? Math.min(620, Math.round(map.getContainer().clientWidth * 0.55)) : 0,
+    },
+  });
 
   const [zoning, overlays, historicHits] = await Promise.all([
     zoningAtPoint(lng, lat),
@@ -576,13 +613,6 @@ map.on("load", () => {
     source: "zoning",
     paint: { "line-color": "#999", "line-width": 0.5 },
   });
-  map.addLayer({
-    id: "zoning-adu-eligible",
-    type: "line",
-    source: "zoning",
-    filter: ["in", ["get", "long_code"], ["literal", ALLOWED_BASE]],
-    paint: { "line-color": "#1b1b1b", "line-width": 2 },
-  });
 
   // the district found by address search
   map.addSource("selected-zoning", { type: "geojson", data: EMPTY });
@@ -590,24 +620,33 @@ map.on("load", () => {
     id: "selected-zoning-outline",
     type: "line",
     source: "selected-zoning",
-    paint: { "line-color": "#d6336c", "line-width": 3 },
+    paint: { "line-color": "#f1b6da", "line-width": 3 },
   });
 
   map.on("moveend", () => loadZoningInView().catch(console.error));
 });
 
-// Legend  
+// Legend
 
 const legend = document.createElement("div");
 legend.style.cssText =
-  "position:absolute;bottom:30px;left:10px;background:#fff;padding:8px 10px;border-radius:4px;font:12px sans-serif;box-shadow:0 1px 4px rgba(0,0,0,.3)";
-for (const [name, color] of Object.entries(GROUP_COLORS)) {
+  "position:absolute;bottom:30px;right:50px;background:#fff;padding:.7em .9em;border-radius:6px;" +
+  "font:14px sans-serif;box-shadow:0 1px 4px rgba(0,0,0,.3)";
+
+function legendRow(color, label) {
   const row = document.createElement("div");
+  row.style.cssText = "display:flex;align-items:center;gap:.6em;margin:.25em 0";
   const swatch = document.createElement("span");
-  swatch.style.cssText = `display:inline-block;width:12px;height:12px;margin-right:6px;vertical-align:middle;background:${color}`;
-  row.append(swatch, name.split("/")[0]); // "Residential", "Commercial", ...
-  legend.append(row);
+  swatch.style.cssText = `flex:none;width:1em;height:1em;border-radius:2px;background:${color}`;
+  row.append(swatch, label);
+  return row;
 }
+
+// one row per zoning group
+for (const [name, color] of Object.entries(GROUP_COLORS)) {
+  legend.append(legendRow(color, name.split("/")[0])); // "Residential", "Commercial", ...
+}
+
 map.getContainer().append(legend);
 
 window.map = map;

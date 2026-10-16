@@ -2,29 +2,43 @@
 
 <html lang="en">
   <head>
+    <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Site Suitability Finder</title>
-    <script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
+    <title>ADU Query</title>
     <script src="https://api.mapbox.com/mapbox-gl-js/v3.7.0/mapbox-gl.js"></script>
     <link href="https://api.mapbox.com/mapbox-gl-js/v3.7.0/mapbox-gl.css" rel="stylesheet" />
-    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/styles.css" />
   </head>
 
   <body>
-    <section>
+    <!-- <header class="article-title">
+      <h1>Accessory Dwelling Unit</h1>
+      <h1>Query Tool</h1>
+    </header> -->
+
     <main>
       <section class="map-section">
         <fieldset class="map-search-controls">
-          <input type="text" name="address-search" placeholder="Address..." aria-label="Search around an address or place">
+          <legend class="visually-hidden">Address search</legend>
+          <h1 class="search-title">Accessory Dwelling Unit Query Tool</h1>
+          <p class="search-help">
+            Enter a Philadelphia address to see its zoning and whether an ADU is permitted.
+          </p>
+          <input
+            type="text"
+            name="address-search"
+            placeholder="Type address here..."
+            aria-label="Search around an address or place"
+          />
         </fieldset>
-      <aside class="parcel-report" hidden></aside>
 
         <div class="map-container">
           <div class="map" id="map"></div>
         </div>
+      </section>
     </main>
-        <script src="./js/main.js" type="module"></script>
-        </section>
+
+    <script src="./js/main.js" type="module"></script>
   </body>
 </html>
