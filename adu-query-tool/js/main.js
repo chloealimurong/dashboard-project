@@ -647,6 +647,7 @@ function legendRow(color, label) {
 for (const [name, color] of Object.entries(GROUP_COLORS)) {
   legend.append(legendRow(color, name.split('/')[0])); // 'Residential', 'Commercial', ...
 }
+legend.append(legendRow('#f1b6da', 'Base Zoning District Box'));
 
 map.getContainer().append(legend);
 
